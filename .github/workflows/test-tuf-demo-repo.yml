@@ -1,0 +1,48 @@
+name: test-tuf-demo-repo
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    name: Test TUF client with TUF demo repo
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - 14.17.0
+          - 14.x
+          - 16.13.0
+          - 16.x
+          - 18.0.0
+          - 18.x
+        platform:
+          - os: ubuntu-latest
+            shell: bash
+          - os: macos-latest
+            shell: bash
+          - os: windows-latest
+            shell: cmd
+    runs-on: ${{ matrix.platform.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.platform.shell }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
+      - name: Setup node
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - name: Run TUF client
+        uses: ejahnGithub/tuf-client-fetch-target-action@v1.1.8
+        with:
+          target-files: 'file1.txt'
+          root-metadata-url: 'https://jku.github.io/tuf-demo/metadata/1.root.json'
+          metadata-base-url: 'https://jku.github.io/tuf-demo/metadata'
+          target-base-url: 'https://jku.github.io/tuf-demo/targets'
